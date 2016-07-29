@@ -7,16 +7,32 @@
 //
 
 import UIKit
+import MapKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    var currentMapLocation: InitialLocation?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        currentMapLocation = getSavedMapLocation()
+        
+        
         return true
+    }
+    
+    func getSavedMapLocation() -> InitialLocation?{
+        
+        let defaults = NSUserDefaults.standardUserDefaults()
+        
+        if let savedLocation = defaults.objectForKey("initialLocation") as? NSData {
+            print("Locaded saved data")
+            return NSKeyedUnarchiver.unarchiveObjectWithData(savedLocation) as? InitialLocation
+        }
+        
+        return nil;
     }
 
     func applicationWillResignActive(application: UIApplication) {
@@ -25,8 +41,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidEnterBackground(application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        
+        if(currentMapLocation == nil) {
+            print("Nothing to save")
+            return
+        }
+        
+        let defaults = NSUserDefaults.standardUserDefaults()
+        
+        let savedData = NSKeyedArchiver.archivedDataWithRootObject(currentMapLocation!)
+        defaults.setObject(savedData, forKey: "initialLocation")
+        print("Save location")
     }
 
     func applicationWillEnterForeground(application: UIApplication) {
