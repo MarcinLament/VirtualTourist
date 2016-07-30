@@ -15,29 +15,80 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
     
+    var newMapRegion: MKCoordinateRegion?
+    let defaultRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(
+            latitude: 51.5074,
+            longitude: 0.1278
+        ),
+        span: MKCoordinateSpan(
+            latitudeDelta: 15.0,
+            longitudeDelta: 15.0
+        )
+    )
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if(appDelegate.currentMapLocation != nil){
-            print("Show saved location: " + String(appDelegate.currentMapLocation!))
-            centerMapOnLocation(appDelegate.currentMapLocation!)
+        loadMap()
+        
+        let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
+        gestureRecognizer.minimumPressDuration = 2.0
+        mapView.addGestureRecognizer(gestureRecognizer)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        mapView.region = newMapRegion!
+        mapView.setCenterCoordinate(
+            newMapRegion!.center,
+            animated: true
+        )
+    }
+    
+    func addAnnotation(gestureRecognizer:UIGestureRecognizer){
+        let touchPoint = gestureRecognizer.locationInView(mapView)
+        let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = newCoordinates
+        
+        mapView.addAnnotation(annotation)
+    }
+    
+    func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        print("selected")
+    }
+    
+    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        saveMap()
+    }
+    
+    func loadMap(){
+        let mapLocation = appDelegate.mapLocation
+        if(mapLocation != nil){
+            newMapRegion = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(
+                    latitude: mapLocation![ "latitude" ]!,
+                    longitude: mapLocation![ "longitude" ]!
+                ),
+                span: MKCoordinateSpan(
+                    latitudeDelta: mapLocation![ "latitudeDelta" ]!,
+                    longitudeDelta: mapLocation![ "longitudeDelta" ]!
+                )
+            )
         }else{
-            print("No saved location")
+            newMapRegion = defaultRegion
         }
         
         mapView.delegate = self;
     }
     
-    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        let zoomLevel = log2(360 * (Double(mapView.frame.size.width/256) / mapView.region.span.longitudeDelta)) + 1
-        print("Zoom level: " + String(zoomLevel))
-        appDelegate.currentMapLocation = InitialLocation(latitude: mapView.centerCoordinate.latitude, longitude:mapView.centerCoordinate.longitude, zoomLevel: zoomLevel)
-    }
-    
-    func centerMapOnLocation(initialLocation: InitialLocation) {
-        let centerCoordinate = CLLocationCoordinate2DMake(initialLocation.latitude, initialLocation.longitude)
-        let span = MKCoordinateSpanMake(0, 360 / pow(2, Double(initialLocation.zoomLevel)) * Double(mapView.frame.size.width) / 256)
-        mapView.setRegion(MKCoordinateRegionMake(centerCoordinate, span), animated: false)
+    func saveMap(){
+        var mapDictionary = [ String : CLLocationDegrees ]()
+        mapDictionary.updateValue( mapView.region.center.latitude, forKey: "latitude" )
+        mapDictionary.updateValue( mapView.region.center.longitude, forKey: "longitude" )
+        mapDictionary.updateValue( mapView.region.span.latitudeDelta, forKey: "latitudeDelta" )
+        mapDictionary.updateValue( mapView.region.span.longitudeDelta, forKey: "longitudeDelta" )
+        appDelegate.mapLocation = mapDictionary
     }
 }
 
