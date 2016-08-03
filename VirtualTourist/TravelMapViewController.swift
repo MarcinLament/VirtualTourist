@@ -8,12 +8,19 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class TravelMapViewController: UIViewController, MKMapViewDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
     
     let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    
+    var selectedPhotoAlbum: PhotoAlbum?
+    
+    lazy var sharedContext: NSManagedObjectContext = {
+            return CoreDataStackManager.sharedInstance().managedObjectContext
+    }()
     
     var newMapRegion: MKCoordinateRegion?
     let defaultRegion = MKCoordinateRegion(
@@ -33,8 +40,19 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         loadMap()
         
         let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
-        gestureRecognizer.minimumPressDuration = 2.0
-        mapView.addGestureRecognizer(gestureRecognizer)
+        self.view.addGestureRecognizer(gestureRecognizer)
+        
+        //fetch all photo albums
+        PhotoAlbum.fetchAllPhotoAlbums { (fetchError, fetchedPhotoAlbums) in
+            if fetchError != nil{
+                print("Error fetching data: " + (fetchError.memory?.localizedDescription)!)
+            }else{
+                print("Fetchded items: " + String(fetchedPhotoAlbums?.count))
+                if(fetchedPhotoAlbums?.count > 0){
+                    self.mapView.addAnnotations(fetchedPhotoAlbums!)
+                }
+            }
+        }
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -43,19 +61,42 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             newMapRegion!.center,
             animated: true
         )
+        
+        self.navigationController?.navigationBarHidden = true
     }
     
     func addAnnotation(gestureRecognizer:UIGestureRecognizer){
-        let touchPoint = gestureRecognizer.locationInView(mapView)
-        let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = newCoordinates
         
-        mapView.addAnnotation(annotation)
+        let recognizer = self.view.gestureRecognizers?.first as! UILongPressGestureRecognizer
+        switch recognizer.state{
+        case .Began:
+            let touchPoint = gestureRecognizer.locationInView(mapView)
+            let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
+            let photoAlbum = PhotoAlbum(mapCoordinates: newCoordinates, context: sharedContext)
+            
+            //add pin to the map
+            dropPin(photoAlbum)
+            
+            //start fetching images for location
+            
+            //save photo album
+            CoreDataStackManager.sharedInstance().saveContext()
+            
+            return
+        default:
+            return
+        }
+    }
+    
+    func dropPin(photoAlbum: PhotoAlbum){
+//        let annotation = MKPointAnnotation()
+//        annotation.coordinate = photoAlbum.coordinate
+        mapView.addAnnotation(photoAlbum)
     }
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
-        print("selected")
+        selectedPhotoAlbum = view.annotation as? PhotoAlbum
+        performSegueWithIdentifier("photoAlbumSegue", sender: nil)
     }
     
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -90,5 +131,20 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         mapDictionary.updateValue( mapView.region.span.longitudeDelta, forKey: "longitudeDelta" )
         appDelegate.mapLocation = mapDictionary
     }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "photoAlbumSegue"{
+            if let destinationVC = segue.destinationViewController as? PhotoAlbumViewController {
+                destinationVC.photoAlbum = selectedPhotoAlbum
+            }
+        }
+    }
+    
+    override func viewWillDisappear(animated: Bool){
+        super.viewWillDisappear(animated)
+        self.navigationController?.navigationBarHidden = false
+    }
+    
+    
 }
 
