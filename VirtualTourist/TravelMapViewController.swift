@@ -87,6 +87,7 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
+        mapView.deselectAnnotation(view.annotation, animated: false)
         selectedPhotoAlbum = view.annotation as? PhotoAlbum
         performSegueWithIdentifier("photoAlbumSegue", sender: nil)
     }

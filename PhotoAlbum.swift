@@ -13,7 +13,7 @@ import MapKit
 class PhotoAlbum: NSManagedObject, MKAnnotation {
 
     var isDownloading: Bool = false
-    var collectionNumber: Int = 1
+    var nextCollectionNumber: Int = 1
     
     var coordinate: CLLocationCoordinate2D
     {

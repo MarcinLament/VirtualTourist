@@ -11,6 +11,6 @@ import Foundation
 struct FlickrConstants{
     static let Endpoint = "https://api.flickr.com/services/rest/"
     static let Method = "flickr.photos.search"
-    static let ApiKey = "dddd"
+    static let ApiKey = "f413fd849000d7b91c9f82e47c92783d"
     static let PerPage = 20
 }

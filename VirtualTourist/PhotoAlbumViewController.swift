@@ -37,6 +37,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
         
         toggleButton(.LoadNew, selectedItemsCount: 0)
         mainActivityView.transform = CGAffineTransformMakeScale(2.5, 2.5);
+        mapView.userInteractionEnabled = false
     }
     
     override func viewWillAppear(animated: Bool) {

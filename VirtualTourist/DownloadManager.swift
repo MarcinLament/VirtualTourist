@@ -36,14 +36,12 @@ class DownloadManager{
             }
             
             CoreDataStackManager.sharedInstance().saveContext()
-            if(self.delegate != nil){
-                self.delegate?.DownloadManagerDidModifiedData()
-            }
+            self.delegate?.DownloadManagerDidModifiedData()
         }
         
         let url = "\(FlickrConstants.Endpoint)?method=\(FlickrConstants.Method)&"
             + "api_key=\(FlickrConstants.ApiKey)&lat=\(Double(photoAlbum.latitude!))&lon=\(Double(photoAlbum.longitude!))&extras=url_q&"
-            + "per_page=\(FlickrConstants.PerPage)&page=\(photoAlbum.collectionNumber)&format=json&nojsoncallback=1"
+            + "per_page=\(FlickrConstants.PerPage)&page=\(photoAlbum.nextCollectionNumber)&format=json&nojsoncallback=1"
         
         FlickrClient.sharedInstance().taskForGETMethod(url, httpBody: nil, headers: nil) { (result, error) in
             
@@ -63,22 +61,25 @@ class DownloadManager{
                     self.delegate?.DownloadManagerError(NSError(domain: "downloadPhotos", code: 1, userInfo: userInfo))
                 }else{
                     let photos = json![ "photos" ] as! [ String : AnyObject ]
+                    let pages = photos["pages"] as! Int
                     let photoArray = photos[ "photo" ] as! [[ String : AnyObject ]]
                     
-                    for photoInfo in photoArray
-                    {
-                        _ = Photo(
-                            name: (photoInfo["title"] as? String)!,
-                            webUrl: (photoInfo["url_q"] as? String)!,
-                            photoAlbum: photoAlbum,
-                            context: self.sharedContext
-                        )
+                    dispatch_async( dispatch_get_main_queue() ){
+                        for photoInfo in photoArray
+                        {
+                            _ = Photo(
+                                name: (photoInfo["title"] as? String)!,
+                                webUrl: (photoInfo["url_q"] as? String)!,
+                                photoAlbum: photoAlbum,
+                                context: self.sharedContext
+                            )
+                        }
+                        
+                        CoreDataStackManager.sharedInstance().saveContext()
                     }
                     
-                    photoAlbum.collectionNumber += 1
-                    
-                    CoreDataStackManager.sharedInstance().saveContext()
-                    
+                    //Flickr has limit of 4000 images otherwise it returns duplicates
+                    photoAlbum.nextCollectionNumber = Int(arc4random_uniform(UInt32(min(199, pages))) + 1)
                     photoAlbum.isDownloading = false
                     
                     self.delegate?.DownloadManagerDidModifiedData()
