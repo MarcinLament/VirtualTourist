@@ -39,15 +39,13 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         
         loadMap()
         
-        let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
+        let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(TravelMapViewController.addAnnotation(_:)))
         self.view.addGestureRecognizer(gestureRecognizer)
         
-        //fetch all photo albums
         PhotoAlbum.fetchAllPhotoAlbums { (fetchError, fetchedPhotoAlbums) in
             if fetchError != nil{
-                print("Error fetching data: " + (fetchError.memory?.localizedDescription)!)
+                self.showAlert("Error", message: "Error fetching data from local storage", completion: nil)
             }else{
-                print("Fetchded items: " + String(fetchedPhotoAlbums?.count))
                 if(fetchedPhotoAlbums?.count > 0){
                     self.mapView.addAnnotations(fetchedPhotoAlbums!)
                 }
@@ -74,12 +72,8 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
             let newCoordinates = mapView.convertPoint(touchPoint, toCoordinateFromView: mapView)
             let photoAlbum = PhotoAlbum(mapCoordinates: newCoordinates, context: sharedContext)
             
-            //add pin to the map
             dropPin(photoAlbum)
             
-            //start fetching images for location
-            
-            //save photo album
             CoreDataStackManager.sharedInstance().saveContext()
             
             return
@@ -89,8 +83,6 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
     }
     
     func dropPin(photoAlbum: PhotoAlbum){
-//        let annotation = MKPointAnnotation()
-//        annotation.coordinate = photoAlbum.coordinate
         mapView.addAnnotation(photoAlbum)
     }
     
@@ -144,7 +136,5 @@ class TravelMapViewController: UIViewController, MKMapViewDelegate {
         super.viewWillDisappear(animated)
         self.navigationController?.navigationBarHidden = false
     }
-    
-    
 }
 

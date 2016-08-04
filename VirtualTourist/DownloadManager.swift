@@ -30,7 +30,6 @@ class DownloadManager{
         
         photoAlbum.isDownloading = true
         
-        //remove any existing photos
         if (photoAlbum.photos?.count > 0){
             for photo in photoAlbum.photos!{
                 sharedContext.deleteObject(photo as! NSManagedObject)
@@ -42,19 +41,15 @@ class DownloadManager{
             }
         }
         
-        print("Starting new download, current items count: \(photoAlbum.photos?.count)")
-        
         let url = "\(FlickrConstants.Endpoint)?method=\(FlickrConstants.Method)&"
             + "api_key=\(FlickrConstants.ApiKey)&lat=\(Double(photoAlbum.latitude!))&lon=\(Double(photoAlbum.longitude!))&extras=url_q&"
             + "per_page=\(FlickrConstants.PerPage)&page=\(photoAlbum.collectionNumber)&format=json&nojsoncallback=1"
-        
-        print("URL: " + url)
         
         FlickrClient.sharedInstance().taskForGETMethod(url, httpBody: nil, headers: nil) { (result, error) in
             
             if error != nil {
                 photoAlbum.isDownloading = false
-                print("Error:")
+                self.delegate?.DownloadManagerError(error!)
             } else {
                 
                 let json = result as? [ String : AnyObject ]
@@ -62,9 +57,11 @@ class DownloadManager{
                 let stat = json!["stat"] as! String
                 if(stat == "fail"){
                     photoAlbum.isDownloading = false
-                    print("Error: " + (json!["message"] as! String))
+                    
+                    let serverError = json!["message"] as! String
+                    let userInfo = [NSLocalizedDescriptionKey : "Server error: \(serverError)"]
+                    self.delegate?.DownloadManagerError(NSError(domain: "downloadPhotos", code: 1, userInfo: userInfo))
                 }else{
-                    print("downloaded list of photos, started parsing the objects...")
                     let photos = json![ "photos" ] as! [ String : AnyObject ]
                     let photoArray = photos[ "photo" ] as! [[ String : AnyObject ]]
                     
@@ -83,10 +80,8 @@ class DownloadManager{
                     CoreDataStackManager.sharedInstance().saveContext()
                     
                     photoAlbum.isDownloading = false
-                    print("album is now ready...")
-                    if(self.delegate != nil){
-                        self.delegate?.DownloadManagerDidModifiedData()
-                    }
+                    
+                    self.delegate?.DownloadManagerDidModifiedData()
                 }
             }
         }
@@ -105,4 +100,5 @@ class DownloadManager{
 
 protocol DownloadPhotosDelegate {
     func DownloadManagerDidModifiedData()
+    func DownloadManagerError(error: NSError)
 }

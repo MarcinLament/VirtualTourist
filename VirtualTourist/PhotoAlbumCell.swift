@@ -9,9 +9,7 @@
 import Foundation
 import UIKit
 
-class PhotoAlbumCell: UICollectionViewCell
-{
-    // outlets
+class PhotoAlbumCell: UICollectionViewCell{
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var photoImageView: UIImageView!
 }

@@ -25,6 +25,7 @@
 		F56BC3971D4B8E13006B6806 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F56BC3961D4B8E13006B6806 /* Assets.xcassets */; };
 		F56BC39A1D4B8E13006B6806 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F56BC3981D4B8E13006B6806 /* LaunchScreen.storyboard */; };
 		F56BC3A41D4B8FB1006B6806 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F56BC3A31D4B8FB1006B6806 /* MapKit.framework */; };
+		F57A3A581D539A1C00B0CA39 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57A3A571D539A1C00B0CA39 /* UIViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 		F56BC3991D4B8E13006B6806 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F56BC39B1D4B8E13006B6806 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F56BC3A31D4B8FB1006B6806 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		F57A3A571D539A1C00B0CA39 /* UIViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,8 @@
 		F56BC38E1D4B8E13006B6806 /* VirtualTourist */ = {
 			isa = PBXGroup;
 			children = (
+				F57A3A591D539B5D00B0CA39 /* Views */,
+				F57A3A561D539A0500B0CA39 /* Extensions */,
 				2098AD741D4CB85B00CB2C76 /* Utility */,
 				F56BC3A51D4B97DC006B6806 /* Model */,
 				F56BC3A21D4B8E76006B6806 /* Storyboards */,
@@ -102,7 +106,6 @@
 				F56BC38F1D4B8E13006B6806 /* AppDelegate.swift */,
 				F56BC3961D4B8E13006B6806 /* Assets.xcassets */,
 				F56BC39B1D4B8E13006B6806 /* Info.plist */,
-				20ACF0261D513AA20085E50E /* PhotoAlbumCell.swift */,
 			);
 			path = VirtualTourist;
 			sourceTree = "<group>";
@@ -134,6 +137,22 @@
 				2098AD6F1D4CB19800CB2C76 /* Photo.swift */,
 			);
 			name = Model;
+			sourceTree = "<group>";
+		};
+		F57A3A561D539A0500B0CA39 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				F57A3A571D539A1C00B0CA39 /* UIViewController.swift */,
+			);
+			name = Extensions;
+			sourceTree = "<group>";
+		};
+		F57A3A591D539B5D00B0CA39 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				20ACF0261D513AA20085E50E /* PhotoAlbumCell.swift */,
+			);
+			name = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -221,6 +240,7 @@
 				F56BC3921D4B8E13006B6806 /* TravelMapViewController.swift in Sources */,
 				F56BC3901D4B8E13006B6806 /* AppDelegate.swift in Sources */,
 				2098AD591D4CAB0800CB2C76 /* Model.xcdatamodeld in Sources */,
+				F57A3A581D539A1C00B0CA39 /* UIViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

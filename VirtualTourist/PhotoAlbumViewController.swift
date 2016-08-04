@@ -42,10 +42,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     override func viewWillAppear(animated: Bool) {
         showPhotoAlbumLocation()
         
-        if(photoAlbum?.photos?.count > 0){
-            print("There are some downloaded photos already")
-        }else{
-            print("No photos, started downloading...")
+        if(photoAlbum?.photos?.count == 0){
             downloadPhotosForLocation()
         }
     }
@@ -63,6 +60,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
         CoreDataStackManager.sharedInstance().saveContext()
         collectionView.deleteItemsAtIndexPaths(selectedIndexPaths!)
         toggleButton(.LoadNew, selectedItemsCount: 0)
+        updateStaticViews()
     }
     
     func downloadPhotosForLocation(){
@@ -83,9 +81,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     }
     
     func collectionView(collectionView: UICollectionView,numberOfItemsInSection section: Int) -> Int{
-        let count = (photoAlbum!.photos?.count)!
-        print("available photos: \(count)")
-        return count
+        return (photoAlbum!.photos?.count)!
     }
     
     func collectionView(collectionView: UICollectionView,didSelectItemAtIndexPath indexPath: NSIndexPath){
@@ -99,7 +95,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
     func processCellSelection(indexPath: NSIndexPath){
         let cell = collectionView.cellForItemAtIndexPath( indexPath ) as! PhotoAlbumCell
         
-        // toggle button if necessary
         let count = collectionView.indexPathsForSelectedItems()!.count
         if (count > 0){
             toggleButton(.Remove, selectedItemsCount: count)
@@ -107,7 +102,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
             toggleButton(.LoadNew, selectedItemsCount: count)
         }
         
-        // set cell selected state
         updateCellSelectionAppearance(cell)
     }
     
@@ -123,28 +117,20 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
         cell.activityIndicator.startAnimating()
         cell.photoImageView.image = nil
         
-        //check if there is an image in core data
         if(photo.image != nil){
-            print("loading image from core data")
             let cachedImage = UIImage(data: photo.image!)
             cell.photoImageView.image = cachedImage
             cell.activityIndicator.stopAnimating()
-        }
-        //there is no image in core data so download it from the web
-        else if(photo.webUrl != nil && !photo.isDownloading){
-            print("no image, start downloading the image")
+        }else if(photo.webUrl != nil && !photo.isDownloading){
             photo.isDownloading = true
             DownloadManager.sharedInstance().downloadImage(photo, completionHandlerForDownloadImage: { (resultData, error) in
                 dispatch_async( dispatch_get_main_queue() ){
                     photo.image = resultData
                     CoreDataStackManager.sharedInstance().saveContext()
-                    print("downloaded image... reloading the data")
                     photo.isDownloading = false
                     collectionView.reloadData()
                 }
             })
-        }else{
-            print("image is downloading...")
         }
         
         updateCellSelectionAppearance(cell)
@@ -162,24 +148,27 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
         return CGSize(width: size, height: size)
     }
     
+    func updateStaticViews(){
+        if(self.photoAlbum?.photos?.count == 0){
+            if(self.photoAlbum!.isDownloading){
+                self.infoTextView.hidden = true
+                self.mainActivityView.startAnimating()
+            }else{
+                self.mainActivityView.stopAnimating()
+                self.infoTextView.hidden = false
+            }
+        }else{
+            self.infoTextView.hidden = true
+            self.mainActivityView.stopAnimating()
+        }
+    }
+    
     func DownloadManagerDidModifiedData(){
         dispatch_async( dispatch_get_main_queue() ){
             self.loadNewCollectionButton.userInteractionEnabled = true
             self.collectionView.reloadData()
             
-            
-            if(self.photoAlbum?.photos?.count == 0){
-                if(self.photoAlbum!.isDownloading){
-                    self.infoTextView.hidden = true
-                    self.mainActivityView.startAnimating()
-                }else{
-                    self.mainActivityView.stopAnimating()
-                    self.infoTextView.hidden = false
-                }
-            }else{
-                self.infoTextView.hidden = true
-                self.mainActivityView.stopAnimating()
-            }
+            self.updateStaticViews()
         }
     }
     
@@ -214,5 +203,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, UI
             loadNewCollectionButton.setTitle("Remove Selected Items (\(selectedItemsCount))", forState: UIControlState.Normal)
         }
         
+    }
+    
+    func DownloadManagerError(error: NSError){
+        showAlert("Error", message: error.localizedDescription, completion: nil)
     }
 }

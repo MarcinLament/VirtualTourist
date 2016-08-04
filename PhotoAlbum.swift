@@ -31,19 +31,16 @@ class PhotoAlbum: NSManagedObject, MKAnnotation {
         }else{
             fatalError("Unable to find Entity name!")
         }
-        
     }
     
     class func fetchAllPhotoAlbums( completionHandler: ( fetchError: NSErrorPointer, fetchedPhotoAlbums: [ PhotoAlbum ]? ) -> Void )
     {
-        // make the fetch request
         let fetchError: NSErrorPointer = nil
         let photoAlbumsFetchRequest = NSFetchRequest( entityName: "PhotoAlbum" )
         
         let photoAlbums: [PhotoAlbum]?
         do{
-            photoAlbums = try CoreDataStackManager.sharedInstance().managedObjectContext.executeFetchRequest(
-                photoAlbumsFetchRequest) as? [ PhotoAlbum ]
+            photoAlbums = try CoreDataStackManager.sharedInstance().managedObjectContext.executeFetchRequest(photoAlbumsFetchRequest) as? [ PhotoAlbum ]
         }catch{
             completionHandler(fetchError: fetchError, fetchedPhotoAlbums: nil)
             return

@@ -13,32 +13,15 @@ import MapKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-//    var currentMapLocation: InitialLocation?
     var mapLocation: [ String : CLLocationDegrees ]?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        
         mapLocation = getSavedMapLocation()
-        
-        
         return true
     }
     
     func getSavedMapLocation() -> [ String : CLLocationDegrees ]?{
-    
-        
         return NSUserDefaults.standardUserDefaults().dictionaryForKey( "mapLocation" ) as? [ String : CLLocationDegrees ]
-//        {
-//            
-//        }
-//        
-//        if let savedLocation = defaults.objectForKey("initialLocation") as? NSData {
-//            let initialLocation = NSKeyedUnarchiver.unarchiveObjectWithData(savedLocation) as? InitialLocation
-//            print("L, lat: " + String(initialLocation!.latitude) + " | lon: " + String(initialLocation?.longitude) + " | latD: " + String(initialLocation!.latitudeDelta) + " | lonD: " + String(initialLocation!.longitudeDelta))
-//            return initialLocation
-//        }
-//        
-//        return nil;
     }
 
     func applicationWillResignActive(application: UIApplication) {
@@ -49,18 +32,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(application: UIApplication) {
         
         if(mapLocation == nil) {
-            print("Nothing to save")
             return
         }
         
-        NSUserDefaults.standardUserDefaults().setObject( mapLocation, forKey: "mapLocation" )
-//        print("S, lat: " + String(currentMapLocation!.latitude) + " | lon: " + String(currentMapLocation?.longitude) + " | latD: " + String(currentMapLocation!.latitudeDelta) + " | lonD: " + String(currentMapLocation!.longitudeDelta))
-//
-//        let defaults = NSUserDefaults.standardUserDefaults()
-//        
-//        let savedData = NSKeyedArchiver.archivedDataWithRootObject(currentMapLocation!)
-//        defaults.setObject(savedData, forKey: "initialLocation")
-//        print("Save location")
+        NSUserDefaults.standardUserDefaults().setObject(mapLocation, forKey: "mapLocation")
     }
 
     func applicationWillEnterForeground(application: UIApplication) {
@@ -74,7 +49,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
-
 }
 

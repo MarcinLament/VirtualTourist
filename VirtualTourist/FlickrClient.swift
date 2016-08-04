@@ -38,7 +38,7 @@ class FlickrClient : NSObject {
             
             func sendError(error: String, statusCode: Int) {
                 let userInfo = [NSLocalizedDescriptionKey : error]
-                completionHandlerForGET(result: nil, error: NSError(domain: "taskForPOSTMethod", code: statusCode, userInfo: userInfo))
+                completionHandlerForGET(result: nil, error: NSError(domain: "taskForGETMethod", code: statusCode, userInfo: userInfo))
             }
         
             guard (error == nil) else {
